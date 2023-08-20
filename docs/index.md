@@ -10,4 +10,4 @@
 
 [LeetCode小岛](https://leetcode.cn/u/longcoding/)
 
-[阿B小站](space.bilibili.com/471943597)
+[阿B小站](https://space.bilibili.com/471943597)

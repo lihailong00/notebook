@@ -1,4 +1,4 @@
-# Kafka基础
+# Kafka基础（TODO）
 
 
 
@@ -78,7 +78,7 @@ Kafka集群由多个Broker组成，Broker负责读写Record，并将数据写入
 
 启动 zookeeper：bin目录下执行`./zookeeper-server-start.sh ../etc/zookeeper.properties`
 
-启动3个kafka：`./kafka-server-start.sh ../etc/server-0.properties`和`./kafka-server-start.sh ../etc/server-0.properties`和`./kafka-server-start.sh ../etc/server-0.properties`
+启动3个kafka：`./kafka-server-start.sh ../etc/server0.properties`和`./kafka-server-start.sh ../etc/server1.properties`和`./kafka-server-start.sh ../etc/server2.properties`
 
 
 
@@ -100,7 +100,11 @@ log.dirs
 
 zookeeper.connect
 
-Listener:指定broker启动时本机的监听名称和端口。
+监听器Listener:指定broker启动时本机的监听名称和端口。
 
-Advertised.listeners
+advertised.listeners：对外发布的访问ip和端口，注册到zookeeper中，给客户端使用。
+
+
+
+broker集群中，内网通过主机名访问，外网通过ip访问。
 

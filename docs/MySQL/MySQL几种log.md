@@ -8,7 +8,7 @@
 
 ### 是什么
 
-用于记录数据库的**增、删、改**操作，并以二进制的形式存放在硬盘中。任何存储引擎都会记录binlog日志。
+用于记录数据库的**增、删、改、表结构变更**操作，并以二进制的形式存放在硬盘中。任何存储引擎都会记录binlog日志。
 
 ### binlog应用场景
 
@@ -65,22 +65,15 @@ binlog刷盘是指将二进制日志数据从内存缓冲区写入磁盘的过�
 
 ## REDOLOG
 
-### redo log应用场景
-
-Redo Log主要应用于**事务**。
-
-1. 事务的持久性：Redo Log记录事务的更改操作。当数据库发生故障时，可以通过Redo Log重新执行事务的修改。
-2. 减少
-
-
+Redo Log主要应用于**保证事务的持久性**：Redo Log记录事务的更改操作。当数据库发生故障时，可以通过Redo Log重新执行事务的修改。
 
 Redo Log包括两部分：内存中的`redo log buffer`和硬盘中的`redo log file`。
 
-在计算机操作系统中，用户空间(user space)下的缓冲区数据一般情况下是无法直接写入磁盘的，中间必须经过操作系统内核空间(kernel space)缓冲区(OS Buffer)。因此，redo log buffer写入redo log file实际上是先写入OS Buffer，然后再通过系统调用fsync()将其刷到redo log file中。
+在计算机操作系统中，用户空间(user space)下的缓冲区数据一般情况下是无法直接写入磁盘的，中间必须经过操作系统内核空间(kernel space)缓冲区(OS Buffer)。因此，`redo log buffer`写入`redo log file`实际上是先写入OS Buffer，然后再通过系统调用fsync()将其刷到`redo log file`中。
 
 
 
-mysql支持三种将redo log buffer写入redo log file的时机，可以通过innodb_flush_log_at_trx_commit参数配置，各参数值含义如下：
+mysql支持三种将`redo log buffer`写入`redo log file`的时机，可以通过`innodb_flush_log_at_trx_commit`参数配置，各参数值含义如下：
 
 ![img](https://pic4.zhimg.com/80/v2-213622cb332c35e77eea6667a471d8ef_1440w.webp)
 

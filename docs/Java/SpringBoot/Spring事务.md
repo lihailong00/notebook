@@ -6,7 +6,7 @@
 
 ## 什么是事务
 
-事务是一组操作，满足四大	原则（ACID）。
+事务是一组操作，满足四大原则（ACID）。
 
 
 
@@ -16,7 +16,7 @@
 
 ### 编程式事务
 
-编程式事务使用较少，但有助于理解事务。其中可以使用`TransactionTemplate`或`TransactionManager`管理事务。
+可以使用`TransactionTemplate`或`TransactionManager`管理事务。
 
 
 

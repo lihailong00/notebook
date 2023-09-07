@@ -1,10 +1,10 @@
-# synchronized
+# synchronized八锁案例
 
 [toc]
 
 
 
-## 八锁案例：synchronized修饰方法
+## 案例
 
 假定有如下代码：
 

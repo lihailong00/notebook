@@ -1,4 +1,4 @@
-# MySQL之MVCC
+# MySQL之MVCC（TODO）
 
 [toc]
 
@@ -6,38 +6,56 @@
 
 ## 概览
 
-MVCC：Multi-Version Concurrency Control（多版本并发控制），用于实现**数据库事务并发控制**的一种策略，用于处理多个事务**同时对数据库进行读写操作**时的冲突和隔离问题。
+MVCC：Multi-Version Concurrency Control（多版本并发控制），这里特指InnoDB引擎在**RC**或**RR**隔离级别下多个事务**读写并发**时的冲突和隔离问题。
 
-MVCC的实现思路是维护数据的版本链，读快照、写实时，从而解决读写冲突。技术难点是快照读时，应该读取版本链上的哪一版数据。
+MVCC的核心思想是维护数据的**UndoLog版本链**，并采用**读快照**、**写实时**的策略解决读写冲突，同时基于**ReadView**机制决定快照读的版本。
 
-MVCC实现需要数据库中的3个**隐式字段**，**undo log日志**、**readView**。
-
-
-
-当前读：读取最新的版本。select ... for update, select ... lock in share mode, update, insert, delete
-
-快照读：
+MVCC实现需要数据库中的**行记录的3个隐式字段**，**undo log日志**、**readView**。
 
 
 
-## MVCC实现原理
+当前读：读取最新的版本。对应SQL：`select ... for update`,  `select ... lock in share mode`,  `update`,  `insert`,  `delete`。
 
-3个隐式字段：
-
-DB_TRX_ID：最近修改这行记录的事务ID。
-
-DB_ROLL_PTR：回滚指针，在Undo Log版本链中，指向上一个版本的数据。
-
-DB_ROW_ID：隐藏主键，如果表没有主键，将会生成该隐式字段。
+快照读：读取历史版本。对应SQL：`select ...`。
 
 
 
-undolog：
+## UndoLog版本链
 
-insert、update、delete的时候，生成undo log，便于回滚。
+行记录的3个隐式字段：
 
-insert时，undo log日志只在当前事务需要，当前事务提交时，立即删除该记录。
+- `row_id`：数据表没定义主键时，自动生成`row_id`作为主键。
 
-update、delete时，产生的undo log日志不仅在当前事务需要，其他事务快照读时也需要，所以当前事务commit后不会被立即删除。
+- `trx_id`：记录了新增/最近修改这条行记录的事务ID，事务ID自增。
 
-![undolog版本链](https://figurebed-1309161819.cos.ap-nanjing.myqcloud.com/typora/%E6%88%AA%E5%B1%8F2023-08-23%2023.35.48.png?q-sign-algorithm=sha1&q-ak=AKIDEcfOnMNBCwZFFWcrhhD8V9VT6iz44j4q2f0GxAvUhwmcghNm-CrRvLxcPtmtrb4A&q-sign-time=1692805070;1692808670&q-key-time=1692805070;1692808670&q-header-list=host&q-url-param-list=ci-process&q-signature=9b6afdb1b41438ead53ca96511338eb6580f3758&x-cos-security-token=HVhosrkse2Yh1D7G8zElywoIt4mvcfWad6c84a171b9f1f288cc3321bcee907efYsm_oTGk30XoqLERnLyaYkUTMYSMdqh6gZYPUcy6Sv0KUbF7df6-RNdxK_Nmm4ZU0-TYdtCzVOTF5veJZ_Lv1hYHn_W0mAGNsI7kBn3bScfRYGbEtXuKtlku_3CJurOWimv2C5JgOIe3lPs6dr8C8tBP7IryPAcUxvlg7d5tKYTMT7C_GW8CNeV-FEsViJVA&ci-process=originImage)
+- `roll_pointer`：指向上一个版本的数据，如下图：
+
+  当事务100（trx_id=100）执行了 `insert into t_user values(1,'张三',20); `之后： ![img](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c50b48b021ca4b3c8930b82ea698e97a~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp)
+
+  当事务102（trx_id=102）执行了 `update t_user set name='李四' where id=1; `之后： ![img](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/dab3839ba4ba4edc82984922ad224995~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp)
+
+  当事务103（trx_id=103）执行了 `update t_user set name='王五' where id=1; `之后：
+
+  ![img](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/0d1470d871c541c08fc706e172e39da2~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp)
+
+
+
+## ReadView
+
+ReadView机制中，有4个重要的变量：
+
+- `m_ids`：活跃事务（未提交事务）ID。
+- `min_trx_id`：`m_ids`中最小事务ID。
+- `max_trx_id`：下一个要分配的事务ID（不是`m_ids`中最大的事务id + 1）。
+- `creator_trx_id`：生成ReadView的事务ID。
+
+RC隔离级别下，每一次快照读都会生成一个最新的ReadView。
+
+RR隔离级别下，只有第一次快照读才会生成一个最新的ReadView。
+
+详细算法暂未总结。
+
+
+
+
+

@@ -13,128 +13,6 @@
 
 
 
-## 理论知识
-
-[docker官方文档](https://docs.docker.com/)
-
-问题：docker技术采用了哪些Linux内核的特性？
-
-答案：
-
-当你创建一个容器时，docker会为该容器创建新的namespace。
-
-
-
-问题：如何理解docker容器？
-
-答案：
-
-1. 容器是宿主机上的一个进程，它与其他进程隔离。
-
-2. 容器是处于运行状态的镜像。
-
-
-
-问题：如何理解docker镜像？
-
-答案：简单来说，docker镜像就是软件包。它为运行的容器提供一个独立的文件系统（叫做联合文件系统），同时它也提供容器运行时需要的所有软件、环境、依赖......
-
-
-
-![img](https://ask.qcloudimg.com/http-save/developer-news/h2qjlnki50.png?imageView2/2/w/1620)
-
-
-
-问题：docker镜像为什么要采用分层原理？
-
-答案：为了共享资源；假定有若干个容器都是基于某个镜像创建的，那么镜像中存放了这些容器需要的软件。举个例子：比如某个镜像中安装了vim软件，那么由它创建的容器也都可以使用vim软件，从而节约资源。
-
-
-
-问题：docker镜像可写吗？docker容器可写吗？
-
-答案：镜像不可写，只可读。容器既可读，又可写。
-
-
-
-[参考文档](https://circleci.com/blog/docker-image-vs-container/#:~:text=Although%20Docker%20images%20and%20containers%20have%20a%20similar,necessary%20for%20a%20machine%20to%20run%20that%20application.)
-
-问题：既然docker image是只读的，那么如何制作docker image呢？
-
-
-
-问题：创建好docker image后，可以修改image中的部分内容吗？如果不能，该如何修改image中的内容呢？
-
-
-
-
-
-问题：不同容器中运行的程序会相互影响吗？
-
-答案：启动一个docker，相当去创建一个进程。docker属于进程之间的隔离。
-
-
-
-问题：docker和虚拟机的区别？
-
-答案：虚拟机模拟一个新的硬件环境，而docker模拟一个新的操作系统。具体体现如下：
-
-1. 启动速度：启动docker相当于启动一个进程；启动虚拟机相当于启动一个操作系统。所以启动docker更快。
-1. 占用资源：docker比虚拟机少很多。
-1. 隔离性：docker的隔离性比虚拟机弱。docker实现进程之间的隔离。虚拟机实现操作系统之间的隔离。
-1. 安全性：docker的安全性弱。**docker中的root和宿主机的root等同**，一旦在docker容器中获得root权限，那么也就获得了宿主机的root权限。
-
-
-
-
-
-问题：docker 容器和镜像的区别？
-
-​	答：1. 镜像创建好后不可修改，每次通过镜像创建一个容器时，容器都会包含镜像中的内容。
-
-2. 从镜像分层的角度看，镜像包含了一系列重叠的只读层，该镜像创建的容器会基于只读层，创建读写层，不同的实例共享只读层。
-3. 容器是一个运行时环境，而镜像是一直存在的。
-
-
-
-[参考资料](https://blog.csdn.net/lu_1110/article/details/106533490)
-
-问题：docker常见的base镜像有哪些？
-
-问题：docker虚拟的kernel一定和宿主机一样吗？如果宿主机的操作系统和docker的操作系统不一样，kernel还是一样的吗？
-
-问题：镜像分层是什么意思，包含了只读层和读写层吗？容器分层又是什么意思，包含了只读层和读写层吗？它俩会共享只读层的文件吗？
-
-
-
-其他：
-
-问题：dockerhub是什么？国内有类似dockerhub的仓库吗
-
-
-
-## docker有什么用
-
-一次镜像，处处运行。
-
-
-
-## docker的基本组成
-
-镜像：类比于类
-
-容器：类比于对象
-
-仓库：存放docker镜像
-
-
-
-## docker架构图解
-
-目前我记得也不是很清楚
-
-[![img](https://figurebed-1309161819.cos.ap-nanjing.myqcloud.com/img/th)](https://cn.bing.com/images/search?q=Docker 架构图&FORM=IQFRBA&id=1EB3DE06BDC66FA8800F4E9CA7382F9CA7652E3E)
-
 
 
 
@@ -147,17 +25,11 @@
 
 
 
-## docker镜像加速（阿里云）
-
-问题：什么是docker镜像加速？
-
-答案：如果要拉取docker镜像，我们不使用dockerhub，而是使用国内的某些存放docker镜像的网站。因此我们需要配置docker拉取镜像的目标网站。
-
-[配置](https://cr.console.aliyun.com/cn-wulanchabu/instances/mirrors)
+## docker镜像加速
 
 
 
-## docker命令
+## docker指令
 
 对于操作docker，我们需要明确的是，要操作docker的哪些对象？也即操作docker软件、还是操作docker的image，还是操作docker的container。
 
@@ -180,33 +52,45 @@
 
 ### 操作docker镜像
 
-1. 列出本地主机上的镜像：`docker images`。
+- 列出本地主机上的镜像：`docker images`。
 
-| REPOSITORY   | TAG                  | IMAGE ID   | CREATED      | SIZE     |
-| ------------ | -------------------- | ---------- | ------------ | -------- |
-| 镜像的仓库源 | 镜像的标签（版本号） | 镜像唯一ID | 镜像创建时间 | 镜像大小 |
+| REPOSITORY               | TAG                  | IMAGE ID   | CREATED      | SIZE     |
+| ------------------------ | -------------------- | ---------- | ------------ | -------- |
+| 镜像仓库（通常是镜像名） | 镜像的标签（版本号） | 镜像唯一ID | 镜像创建时间 | 镜像大小 |
 
 
 
-2. 去镜像远程仓库查找某个镜像：`docker ` search 镜像名称
+- 镜像名称结构：`cogset/lets-encrypt:0.14.2`。
+
+  **username**: cogset
+
+  **repository**: lets-encrypt
+
+  **tag**: 0.14.2
+
+  有时候没有username，表示镜像是由 Docker 官方所维护和提供的，所以就不单独标记用户了。
+
+  
+
+- 去镜像远程仓库查找某个镜像：`docker ` search 镜像名称
 
 ​	[docker search 相关文档](https://blog.csdn.net/lw001x/article/details/107152016)
 
 
 
-3. 拉取（下载）某个镜像：`docker pull 镜像名字[:latest]`
+- 拉取（下载）某个镜像：`docker pull 镜像名字[:latest]`
 
 ​	例如：`docker pull mysql:5.7`
 
 
 
-4. 删除某个镜像：`docker rmi 镜像名或镜像ID`
+- 删除某个镜像：`docker rmi 镜像名或镜像ID`
 
 ​	i 表示 image
 
 
 
-5. tar包导入为docker image：`docker image import `
+- tar包导入为docker image：`docker image import `
 
 
 
@@ -214,114 +98,67 @@
 
 ### 操作docker容器
 
-**创建 docker容器**：`docker run -i -t 镜像名 /bin/bash`
+- **创建 docker容器**：``docker run -it 镜像名 /bin/bash`
 
-`-i`：保证容器的STDIN开启，持久的标准输入是交互式shell的“半边天”。
+  `-i`：保证容器的STDIN开启，持久的标准输入是交互式shell的“半边天”。
 
-`-t`：让docker为新创建的容器分配一个为tty终端。
+  `-t`：让docker为新创建的容器分配一个为tty终端。
 
-`/bin/bash`：创建好容器后，首先执行该命令，也即打开一个Bash shell。
+  通常`-it`搭配使用。
 
+  `/bin/bash`：创建好容器后，首先执行该命令，也即打开一个Bash shell。
 
+- **自定义端口和容器名称**：`docker run -it -p 8888:8080 --name t1 tomcat /bin/bash`
 
-> 问题：docker如何定位“镜像名”呢？
+- **创建守护式容器**：`docker run -d redis:6.0.8`
 
-> 答案：先查找本地。如果没有再查找远程镜像库。默认在DockerHub中查找，如果修改过docker镜像源，则在修改后的镜像源中查找。如果找到，会先将镜像下载到本地，然后基于镜像创建容器。如果还没找到，则无法创建容器（因为没镜像呀~）。
+- **进入正在运行的容器**：
 
+  方法一：`docker exec -it 容器名 /bin/bash`
 
+  方法二：`docker attach 容器名`
 
-> 问题：新创建的docker容器都有哪些属性呢？
+  建议使用`docker exec`
 
-> 答案：有自己的网络、IP地址、用来和宿主机进行通信的桥接网络接口。
+- **退出容器**
 
+  方法一：`ctrl + d`
 
+  方法二：`ctrl + p + q`
 
+  建议使用`ctrl + d`
 
+- **查看正在运行的容器**：`docker ps`
 
-**自定义端口和容器名称**：`docker run -it -p 8888:8080 --name t1 tomcat /bin/bash`
+- **查看所有容器**：`docker ps -a`
 
+- **查看容器中正在做什么**：`docker logs 容器名`
 
+- **查看某个容器内部信息**：`docker inspect 容器名`
 
-**创建守护式容器**：`docker run -d redis:6.0.8`
+  补：进入`/var/lib/docker`能查看更多关于docker的配置信息。
 
+- **启动已经停止的容器**：`docker start 容器名`
 
+- **停止正在运行的容器**：`docker stop 容器ID或容器名`
 
-**查看正在运行的容器**：`docker ps`
+- **查看容器日志**：`docker logs 容器名`
 
-**查看所有容器**：`docker ps -a`
+- **查看容器的进程**：`docker top 容器名`
 
-**查看容器中正在做什么**：`docker logs 容器名`
+- **重启容器**：`docker restart 容器名`
 
-**查看某个容器内部信息**：`docker inspect 容器名`
+- **从容器中拷贝文件到主机**：`docker cp 容器ID:容器内路径 目的主机路径`
 
-补：进入`/var/lib/docker`能查看更多关于docker的配置信息。
+- **从主机中拷贝文件到容器**：`docker cp 主机文件地址 容器ID:容器内路径`
 
+- **容器导出为tar解压包**：`docker export 容器ID > 文件名.tar`
 
+- **tar解压包导入为<u>镜像</u>**：`cat 文件名.tar | docker import - 镜像名:镜像版本号`，其中镜像用户、镜像名和版本号随意指定。
 
-**启动已经停止的容器**：`docker start 容器名`
+  注意：**容器**导出为解压包，解压包再导入为**镜像**！
 
-**停止正在运行的容器**：`docker stop 容器ID或容器名`
-
-
-
-**查看容器日志**：`docker logs 容器名`
-
-**查看容器的进程**：`docker top 容器名`
-
-**向容器中添加额外进程**：`docker exec` （一般不单独执行）
-
-
-
-**进入正在运行的容器**：
-
-方法一：`docker exec -it 容器名 /bin/bash`
-
-方法二：`docker attach 容器名`
-
-问题：两者有什么区别？
-
-答案：
-
-	1. 方法一是创建一个新的线程进入容器。
-	1. 方法二是直接进入容器。
-
-
-
-**退出容器**
-
-方法一：`ctrl + d`
-
-方法二：`ctrl + p + q`
-
-问题：使用`ctrl + d`退出容器和`ctrl + p + q`退出容器的区别？
-
-答案：`ctrl + d`会结束线程并退出容器，`ctrl + p + q`不会结束线程并退出游戏。
-
-
-
-**重启容器**：`docker restart 容器名`
-
-注意：容器会检查错误代码，然后决定是否重启，默认为不重启。如果想让容器总是重启，则需要这样做`docker restart --restart=always 容器名`。
-
-
-
-**问题：如果修改已经分配好端口号的容器端口？**
-
- 
-
-**从容器中拷贝文件到主机**：`docker cp 容器ID:容器内路径 目的主机路径`
-
-**从主机中拷贝文件到容器**：`docker cp 主机文件地址 容器ID:容器内路径`
-
-**容器导出为tar解压包**：`docker export 容器ID > 文件名.tar`
-
-**tar解压包导入为 *镜像* **：`cat 文件名.tar | docker import - 镜像名:镜像版本号`，其中镜像用户、镜像名和版本号随意指定。
-
-注意：**容器**导出为解压包，解压包再导入为**镜像**！
-
-
-
-**将容器导出为镜像/制作镜像**：`docker commit -m "add vim" -a "lhl" 容器ID 镜像名称[:镜像版本号]`
+- **将容器导出为镜像/制作镜像**：`docker commit -m "add vim" -a "lhl" 容器ID 镜像名称[:镜像版本号]`
 
 
 
@@ -341,21 +178,11 @@
 
 2. 仓库是镜像的集合，建议将**一个应用不同版本**的镜像放置在一个仓库中。建议以**软件包名或应用名作为仓库名称**。
 
->以软件包命名：例如 centos、jetty
->
->以应用命名：例如 console-web、console-service
-
-
+   > 以软件包命名：例如 centos、jetty
+   >
+   > 以应用命名：例如 console-web、console-service
 
 构建私有镜像仓库：使用docker registry。（我暂时还用不上）
-
-
-
-
-
-将当前容器myos导出为mycentos.tar到当前目录：`docker export -o mycentos.tar myos`：导出到当前目录。
-
-`docker import mycentos.tar myosimage:1.0`：mycentos.tar文件必须在当前目录下，myosimage表示该tar包导入为镜像时的REPOSITORY（仓库名），1.0表示该镜像的TAG（版本号）。
 
 
 
@@ -365,7 +192,7 @@
 
 问题：为什么要学这个东西？
 
-答案：假定我们想随时备份某个容器内部的资料，防止该容器被误删后资料丢失，那么我们需要考虑将docker容器中的数据持久化到宿主机中。此时宿主机中的内容和docker容器中的内容共享同一片存储空间。
+答案：假定我们想随时备份某个容器内部的资料，防止该容器被误删后资料丢失，那么我们需要考虑将docker容器中的**数据持久化到宿主机**中。此时宿主机中的内容和docker容器中的内容共享同一片存储空间。
 
 `docker run -it --privileged=true -v /宿主机绝对路径:/容器内目录 镜像名`
 

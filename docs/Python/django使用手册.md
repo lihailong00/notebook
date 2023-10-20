@@ -4,13 +4,11 @@
 
 ## 创建Django项目
 
-1. 打开Pycharm，初始化项目`/pro`。
+1. 打开Pycharm，Pycharm可以直接启动Django项目。
 
-2. 安装django依赖。
+2. 也可以手动安装django依赖，并初始化Django项目：`django-admin startproject mysite`。其中mysite是项目名。
 
-3. `/pro`路径下，执行：`django-admin startproject mysite`。其中mysite是项目名。
-
-4. 进入`/pro/mysite`，启动项目。
+4. 我们将`manage.py`所在的目录称为**根目录**，在根目录下执行启动web服务。
 
    ```bash
    # 方式1.直接运行项目，默认8000端口
@@ -19,9 +17,9 @@
    python manage.py runserver 0.0.0.0:8000
    ```
 
-5. 创建一个应用，`/pro/mysite`路径下执行：`python manage.py startapp polls`。这里我们创建了一个名为polls的应用。
+5. 根目录下执行：`python manage.py startapp polls`。这里我们创建了一个名为polls的应用。
 
-6. 将新创建的polls应用加载到`/pro/mysite/mysite/settings.py`文件中。
+6. 将新创建的polls应用加载到`/mysite/mysite/settings.py`文件中。
 
    ```python
    INSTALLED_APPS = [
@@ -36,22 +34,18 @@
    ]
    ```
 
-   
+
+6. 项目结构：
+
+   ```
+   mysite		# 根路径执行django-admin startproject mysite，创建此项目
+   ----mysite	# 主应用
+   ----polls	# 自定义应用
+   ```
 
 
 
-项目结构：
-
-```
-django-pro		# Python根路径
-----mysite		# 根路径执行django-admin startproject mysite，创建此项目
---------mysite	# 根路径创建项目后，同时也会创建这个 主应用。
---------polls	# 自定义创建的 应用
-```
-
-
-
-项目包含应用。比如，图书管理系统是一个项目。借书是一个应用，还书是另一个应用。
+**项目**包含**应用**。比如，图书管理系统是一个项目。借书是一个应用，还书是另一个应用。
 
 
 
@@ -59,9 +53,7 @@ django-pro		# Python根路径
 
 ## 编写Django应用
 
-1. 编写polls应用的视图文件，类似Spring Boot的controller文件。
-
-   编写文件`/pro/mysite/polls/urls.py`
+1. 编写polls应用的视图文件`/mysite/polls/views.py`。类似Spring Boot的controller文件。
 
    ```python
    from django.http import HttpResponse
@@ -70,10 +62,8 @@ django-pro		# Python根路径
    def index(request):
        return HttpResponse("Hello, world. You're at the polls index.")
    ```
-
-2. 配置polls应用的URL映射关系。
-
-   编写文件`/pro/mysite/polls/urls.py`
+   
+2. 配置polls应用的URL映射关系，编写文件`/mysite/polls/urls.py`。
 
    ```python
    from django.urls import path
@@ -83,10 +73,8 @@ django-pro		# Python根路径
        path("", views.index, name="index"), # name属性特别适用于模板。对于前后端分离的项目来说，意义不大，可以不用设置name属性。
    ]
    ```
-
-3. 编写mysite项目的URL映射关系。
-
-   编写文件`/pro/mysite/mysite/urls.py`
+   
+3. 编写mysite项目的URL映射关系，编写文件`/pro/mysite/mysite/urls.py`。
 
    ```python
    from django.contrib import admin
@@ -97,7 +85,7 @@ django-pro		# Python根路径
        path('polls/', include('polls.urls'))  # 我添加的
    ]
    ```
-
+   
 4. 访问`http://localhost:8000/polls`。
 
 
@@ -110,7 +98,7 @@ Django会默认使用SQLite数据库。但是项目中通常使用MySQL数据库
 
 1. 安装MySQL驱动程序：`pip install mysqlclient`。
 
-2. `/pro/mysite/mysite/settings.py`中配置数据库。
+2. 主应用`/mysite/settings.py`中配置数据库。
 
    ```python
    ''' 默认数据库配置
@@ -135,44 +123,83 @@ Django会默认使用SQLite数据库。但是项目中通常使用MySQL数据库
    }
    ```
 
-3. 迁移数据库，进入`/pro/mysite`，执行：`python manage.py migrate`。此时可以看到数据库中生成了很多数据表。
+3. 确保当前应用被注册：进入主应用的`/mysite/settings.py`，找到`INSTALLED_APPS`，注册自己的应用。
 
-4. 我们可以在自己的应用中创建Model，并同步到数据库。简单来说，就是在`/pro/polls/models.py`文件中创建一个class，然后数据库中自动生成对应的数据表。
+   ```python
+   INSTALLED_APPS = [
+       # 自己配置
+       'polls'
+   ]
+   ```
 
-5. 编写文件`/pro/polls/models.py`。
+4. 迁移数据库，进入根目录，执行：`python manage.py migrate`。此时可以看到数据库中生成了很多数据表。
+
+5. 我们可以在自己的应用中创建Model，并同步到数据库。简单来说，就是在`/polls/models.py`文件中创建一个class，然后数据库中自动生成对应的数据表。
+
+6. 编写文件`/polls/models.py`。
 
    ```python
    from django.db import models
+   from django.utils import timezone
    
    
+   # 字段设置建议：除了str不用指定默认值，其他都要指定默认值。下描案例中，code就没有指定默认值，可能就会出各种问题。
    class Book(models.Model):
-       title = models.CharField(max_length=100)
-       author = models.CharField(max_length=100)
-       publication_date = models.DateField()
+       '''
+       字符串类型的字段如果没有赋值，则默认为空字符串（不是NULL！）
+       其他类型（int，datetime，decimal...）如果没有设定默认值，则赋值时必须指定值为多少
+       '''
+       title: str = models.CharField(max_length=100)
+       author: str = models.CharField(max_length=100)
+       publication_date: datetime = models.DateTimeField(default=datetime.now())
        # 整数数位+小数数位 <= 8  两位小数  默认是0.00
-       price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
-       code = models.IntegerField(default=0)
+       price: decimal = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+       code: int = models.IntegerField()
    
-       # 一定要写这行！
-       objects = models.Manager()
-   
-       def __str__(self):
-           return 'title=' + self.title.__str__() + \
-               '\nauthor=' + self.author.__str__() + \
-               'publication_date=' + self.publication_date.__str__() + \
-               '\nprice=' + self.price.__str__() + \
-               '\ncode=' + self.code.__str__()
+       	# 定义__str__的目的是为了将对象转成dict，用于update_or_create这类函数的defaults参数。
+           # 不能直接将对象转为json！
+           def __str__(self):
+               '''
+               拼接字符串时:
+               注意属性需要用单引号''括起来
+               注意除了数字类型的值，都需要用''括起来
+               '''
+               return ('{\'title\':' + '\'' + (self.title if len(self.title) != 0 else '') + '\''
+                   + ',\'author\':' + '\'' + (self.author if len(self.author) != 0 else '') + '\''
+                   + ',\'publication_date\':' + '\'' + str(self.publication_date) + '\''
+                   + ',\'price\':' + str(self.price)
+                   + ',\'code\':' + str(self.code)  # 这里建议将上面的code设定默认值
+                   + '}')
        
+       # 假定需要对Book数组自定义排序，可以重写__lt__函数，然后可以直接sort这个数组: book_arr.sort()
+       def __lt__(self, other):
+           if isinstance(other, Book):
+               if self.title != other.title:
+                   return self.title < other.title
+               if self.author != other.author:
+                   return self.author < other.author
+               return self.publication_date < other.publication_date
+           return NotImplemented
+       
+       # 如果想对Book数组去重，则需要重写__hash__函数和__eq__函数。去重时只需要: book_arr = list(set(book_arr))
+       def __hash__(self):
+           return hash((self.title, self.author))
+   
+       def __eq__(self, other):
+           if isinstance(other, Book):
+               return (self.title == other.title
+                       and self.author == other.author)
+           return False
    ```
 
-6. 迁移数据：
+7. 迁移数据：
 
    ```bash
    python manage.py makemigrations
    python manage.py migrate
    ```
 
-7. 备注：
+8. 备注：
 
    **强烈建议遵循迁移工具修改数据表！**
 
@@ -181,6 +208,144 @@ Django会默认使用SQLite数据库。但是项目中通常使用MySQL数据库
 
 
 ## SQL增删改查
+
+> 增
+
+```python
+# 方法一
+book: Book = Book(title='C++')
+book.save()  # 保存失败，因为code属性没有默认值，不能为空
+
+book: Book = Book(title='C++', code=1)  # 即便没有指定author，但是也会为author分配一个空字符串
+book.save()  # 保存成功，注意save函数没有返回值
+
+
+# 方法二
+inserted_book = Book.objects.create(title='C++', author='晓龙')  # 会返回插入到数据库中的值
+print(inserted_book)
+```
+
+
+
+> 批量增
+
+```python
+course_arr = [Course(), Course(), Course()]
+Book.objects.bulk_create(course_arr)
+```
+
+
+
+> 不存在就【增】，存在就【改】
+
+假定数据表中的数据如下：
+
+| id   | title | author | price | code | publication_date           |
+| ---- | ----- | ------ | ----- | ---- | -------------------------- |
+| 1    | Java  | 一龙   | 1.00  | 1    | 2023-10-08 00:00:00.000000 |
+| 2    | C++   | 二龙   | 2.00  | 2    | 2023-10-08 00:00:00.000000 |
+| 3    | C++   | 三龙   | 3.00  | 3    | 2023-10-08 00:00:00.000000 |
+
+```python
+# defaults中时修改后的字段值，defaults中没有涉及到的字段保持原值。非defaults值就是查询条件。
+# 两个返回值：第1个是修改/插入的对象的结构；第2个用于判断是否是新建的对象
+# 确保只能查询出1个值
+created_book, is_created = Book.objects.update_or_create(title='Java', defaults={'author': '大龙'})
+if is_created:
+    print('创建对象')
+else:
+    print('修改对象')
+print(created_book)
+'''
+打印结果:
+修改对象
+{title:Java,author:大龙,publication_date:2023-10-08 00:00:00+00:00,price:1.00,code:1}
+'''
+```
+
+
+
+```python
+# 报错，因为存在两个满足条件的值
+created_book, is_created = Book.objects.update_or_create(title='C++', defaults={'author': '大龙'})
+```
+
+
+
+```python
+# 报错，因为新建的值的code不能为空
+created_book, is_created = Book.objects.update_or_create(title='Python', defaults={'author': '大龙'})
+```
+
+
+
+```python
+# 插入成功
+created_book, is_created = Book.objects.update_or_create(title='Python', defaults={'author': '大龙', 'code': 3})
+```
+
+
+
+```python
+# 将对象转为json字符串，再转为dict，最后传递给defaults
+# 一定要用eval()函数将字符串转为dict
+# 不能直接用json工具将对象转为json字符串！一定要重写__str__()函数！
+created_book, is_created = Book.objects.update_or_create(title='Python', defaults=eval(book.__str__())
+```
+
+
+
+
+
+> 删
+
+```python
+Book.objects.filter(title='C++', author='晓龙').delete()
+```
+
+
+
+> 批量删除
+
+这里的批量删除是指删除多个行记录，并且这些行记录的值各不相同。
+
+```python
+objects = [
+    {'title': 'C++', 'author': '二龙'},
+    {'title': 'Python', 'author': 'x龙'},
+    {'title': 'PHP', 'author': '天龙'}
+]
+query_conditions = []
+for obj in objects:
+    query_conditions.append(Q(title=obj['title']) & Q(author=obj['author']))
+
+final_query = reduce(lambda x, y: x | y, query_conditions)
+
+result_arr = Book.objects.filter(final_query)
+result_arr.delete()
+```
+
+
+
+
+
+> 改
+
+```python
+Book.objects.filter(title='C++').update(author='晓龙')
+```
+
+
+
+> 查
+
+```python
+from django.db.models import Q
+
+book_query_set = Book.objects.filter(Q(title='C++') & Q(author='二龙'))
+book_arr = [book for book in book_query_set]  # book_arr中的元素类型是Book
+print(book_arr)
+```
 
 
 

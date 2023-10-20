@@ -19,6 +19,8 @@ docker run -id \
 -v /mnt/docker/mysql/data:/var/lib/mysql \
 -e MYSQL_ROOT_PASSWORD=自定义MySQL密码 \
 mysql:latest
+
+
 ```
 
 3. 进入MySQL数据库：`docker exec -it 容器名 mysql -u root -p`，然后输入密码即可。之后就能进入MySQL的命令行中。

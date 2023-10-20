@@ -6,7 +6,7 @@
 
 - 队列的核心功能是**先进后出**，从数据结构的角度来看，可以采用数组、链表等方式实现队列。
 
-补充：优先队列的实现更复杂，它能够保证每次取出的元素都是优先级最高的。其底层原理是**堆**。
+  补充：优先队列的实现更复杂，它能够保证每次取出的元素都是优先级最高的。其底层原理是**堆**。
 
 
 
@@ -25,24 +25,7 @@
 
 
 
-## 常见队列
-
-在`JUC`包中，开发人员为我们提供了大量队列。
-
-1. 直接提交队列（`SynchronousQueue`）：容量为0
-2. 
-
-
-
-支持多生产者多消费者
-
-
-
-## 
-
-
-
-## `LinkedBlockingQueue`
+## 常见api
 
 | 方法         | 抛出异常    | 返回特定值 | 阻塞     | 阻塞特定时间           |
 | ------------ | ----------- | ---------- | -------- | ---------------------- |
@@ -52,7 +35,25 @@
 
 
 
-> 案例
+## 常见队列
+
+
+
+| 实现类                  | 功能                                                         |
+| ----------------------- | ------------------------------------------------------------ |
+| `ArrayBlockingQueue`    | **基于数组的阻塞队列**，使用数组存储数据，并需要指定其长度，所以是一个**有界队列** |
+| `LinkedBlockingQueue`   | **基于链表的阻塞队列**，使用链表存储数据，默认是一个**无界队列**；也可以通过构造方法中的`capacity`设置最大元素数量，所以也可以作为**有界队列** |
+| `SynchronousQueue`      | 一种没有缓冲的队列，生产者产生的数据直接会被消费者获取并且立刻消费 |
+| `PriorityBlockingQueue` | 基于**优先级别的阻塞队列**，底层基于数组实现，是一个**无界队列** |
+| `DelayQueue`            | **延迟队列**，其中的元素只有到了其指定的延迟时间，才能够从队列中出队 |
+
+
+
+
+
+## 使用案例
+
+### `LinkedBlockingQueue`
 
 ```java
 import java.util.concurrent.BlockingQueue;
@@ -145,7 +146,7 @@ public class Main {
 
 
 
-## `SynchronousQueue`
+### `SynchronousQueue`
 
 1. `SynchronousQueue`并不是真正意义上的队列，因为它没有容量。
 
@@ -154,8 +155,6 @@ public class Main {
 3. 当一个线程尝试从`SynchronousQueue`中取出元素时，它也会被阻塞，直到另一个线程向`SynchronousQueue`中插入一个元素。
 
    
-
-> 案例
 
 ```java
 import java.util.StringJoiner;
@@ -215,16 +214,3 @@ public class Main {
 1684077097418	|	13	|	Thread-1	|	取出饼子2
 ```
 
-
-
-
-
-LinkedBlockingQueue 不公平 生产者消费者同时存取
-
-ArrayBlockingQueue可以配置是否公平 生产者消费者不能同时存取
-
-SynchronizedQueue 没有容量，可以配置是否公平
-
-
-
-PriorityBlockingQueue 两种比较器：类实现comparable接口，或提供Comparator（如果比较多个字段呢？），遍历的时候不保证有序。底层原理是堆。·

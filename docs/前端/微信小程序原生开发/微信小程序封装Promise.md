@@ -87,7 +87,7 @@ Promise风格的请求能够解决**回调地狱**的问题。
 
 ```js
 const app = getApp()
-export default function createRequest(options) {
+export function createRequest(options) {
   return new Promise((resolve, reject) => {
     const token = wx.getStorageSync('token')  // 自定义：获取token
 
@@ -160,12 +160,12 @@ export default function createRequest(options) {
 - 定义接口：api/index/sendRequest.js
 
 ```js
-import createRequest from "../../util/request";
+import { createRequest } from "../../util/request";
 
 export function sendRequest(data) {  // 定义接口
   return createRequest({  // 返回一个Promise对象
     url: '/test',
-    method: 'get',
+    method: 'get', 
     data: data
   })
 }
@@ -187,4 +187,105 @@ Page({
 ```
 
 
+
+## 自定义封装Promise风格上传
+
+> util/request.js：
+
+```js
+export function createUploadRequest(options) {
+  return new Promise((resolve, reject) => {
+    const token = wx.getStorageSync('token')  // 自定义：获取token
+    const baseUrl = app.getConfig("baseUrl")
+    const url = `${baseUrl}${options.url}`
+    const header = {  // 自定义header
+      'token': token
+    }
+    let showLoading = false
+    if (options.loading !== false) {
+      showLoading = true
+      wx.showLoading({
+        title: '正在加载',
+        mask: true
+      })
+    }
+
+    // todo
+    wx.uploadFile({
+      url,
+      filePath: options.data.filePath,
+      header,
+      name: 'file',
+      formData: { user: 'test' },
+      timeout: options.timeout || 20000,
+      success: (res) => {
+        res = JSON.parse(res.data)
+        if (showLoading) {
+          wx.hideLoading()
+          showLoading = false
+        }
+        if (res.success) {
+          return resolve(res)
+        } else {
+          wx.showToast({  // 自定义：如果执行失败，则弹框提醒
+            title: res.msg,
+            icon: 'none'
+          })
+          return reject(res)
+        }
+      },
+      fail(err) {
+        if (showLoading) {
+          wx.hideLoading()
+          showLoading = false
+        }
+        wx.showToast({  // 自定义：如果执行失败，则弹框提醒
+          title: '服务开小差啦！',
+          icon: 'none'
+        })
+        reject(err)
+      }
+    });
+  })
+}
+```
+
+
+
+定义接口
+
+```js
+import { createUploadRequest } from '../../../util/request'
+
+export function uploadImage(data) {
+  return createUploadRequest({
+    url: '/upload/image',
+    method: 'POST', 
+    data: data
+  })
+}
+```
+
+
+
+调用接口
+
+```js
+import { uploadImage } from '../../../api/trade/create-page/create-page'
+Page({
+  afterRead(e) {
+    const { file } = e.detail  // 取出文件的临时地址，至关重要！
+    // 调用函数
+    uploadImage({
+      filePath: file.url,
+    }).then(res => {
+      // 上传完成需要更新 fileList
+      const { fileList = [] } = this.data;
+      fileList.push({ ...file, url: res.data.url });
+      this.setData({ fileList });
+    })
+  },
+})
+
+```
 

@@ -49,6 +49,10 @@
 
 
 
+当然，我们也可以不用创建新应用，而是直接使用初始化的主应用，此时一定要在主应用目录下创建一个`migrations`文件，例如：`mysite/mysite/migrations`
+
+
+
 
 
 ## 编写Django应用
@@ -139,38 +143,31 @@ Django会默认使用SQLite数据库。但是项目中通常使用MySQL数据库
 6. 编写文件`/polls/models.py`。
 
    ```python
+   import decimal
+   from datetime import datetime
    from django.db import models
-   from django.utils import timezone
    
    
-   # 字段设置建议：除了str不用指定默认值，其他都要指定默认值。下描案例中，code就没有指定默认值，可能就会出各种问题。
+   # 字段设置建议：建议所有值都设定默认值。
    class Book(models.Model):
-       '''
-       字符串类型的字段如果没有赋值，则默认为空字符串（不是NULL！）
-       其他类型（int，datetime，decimal...）如果没有设定默认值，则赋值时必须指定值为多少
-       '''
        title: str = models.CharField(max_length=100)
        author: str = models.CharField(max_length=100)
        publication_date: datetime = models.DateTimeField(default=datetime.now())
        # 整数数位+小数数位 <= 8  两位小数  默认是0.00
        price: decimal = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
-       code: int = models.IntegerField()
+       code: int = models.IntegerField(default=0)
    
-       	# 定义__str__的目的是为了将对象转成dict，用于update_or_create这类函数的defaults参数。
-           # 不能直接将对象转为json！
-           def __str__(self):
-               '''
-               拼接字符串时:
-               注意属性需要用单引号''括起来
-               注意除了数字类型的值，都需要用''括起来
-               '''
-               return ('{\'title\':' + '\'' + (self.title if len(self.title) != 0 else '') + '\''
-                   + ',\'author\':' + '\'' + (self.author if len(self.author) != 0 else '') + '\''
-                   + ',\'publication_date\':' + '\'' + str(self.publication_date) + '\''
-                   + ',\'price\':' + str(self.price)
-                   + ',\'code\':' + str(self.code)  # 这里建议将上面的code设定默认值
-                   + '}')
-       
+       # 不能直接使用__dict__ 因为__dict__中包含很多父类的字段，在使用update_or_create等方法时会报错
+       def get_dict(self):
+           result_dict = {
+               'title': self.title,
+               'author': self.author,
+               'publication_date': self.publication_date,
+               'price': self.price,
+               'code': self.code
+           }
+           return result_dict
+   
        # 假定需要对Book数组自定义排序，可以重写__lt__函数，然后可以直接sort这个数组: book_arr.sort()
        def __lt__(self, other):
            if isinstance(other, Book):
@@ -180,7 +177,7 @@ Django会默认使用SQLite数据库。但是项目中通常使用MySQL数据库
                    return self.author < other.author
                return self.publication_date < other.publication_date
            return NotImplemented
-       
+   
        # 如果想对Book数组去重，则需要重写__hash__函数和__eq__函数。去重时只需要: book_arr = list(set(book_arr))
        def __hash__(self):
            return hash((self.title, self.author))
@@ -190,8 +187,12 @@ Django会默认使用SQLite数据库。但是项目中通常使用MySQL数据库
                return (self.title == other.title
                        and self.author == other.author)
            return False
+   
+       class Meta:
+           db_table = 'xnxy_book'  # 自定义数据表名
+   
    ```
-
+   
 7. 迁移数据：
 
    ```bash
@@ -220,8 +221,14 @@ book: Book = Book(title='C++', code=1)  # 即便没有指定author，但是也�
 book.save()  # 保存成功，注意save函数没有返回值
 
 
-# 方法二
+# 方法二 (建议)
 inserted_book = Book.objects.create(title='C++', author='晓龙')  # 会返回插入到数据库中的值
+print(inserted_book)
+
+# 方法三 (更建议)
+book = Book()
+# ... 假定我们已经初始化了book对象
+inserted_book = Book.objects.create(**book.get_dict())  # 这种方式可以直接将对象插入到数据库中
 print(inserted_book)
 ```
 
@@ -273,27 +280,9 @@ created_book, is_created = Book.objects.update_or_create(title='C++', defaults={
 
 
 ```python
-# 报错，因为新建的值的code不能为空
-created_book, is_created = Book.objects.update_or_create(title='Python', defaults={'author': '大龙'})
-```
-
-
-
-```python
 # 插入成功
 created_book, is_created = Book.objects.update_or_create(title='Python', defaults={'author': '大龙', 'code': 3})
 ```
-
-
-
-```python
-# 将对象转为json字符串，再转为dict，最后传递给defaults
-# 一定要用eval()函数将字符串转为dict
-# 不能直接用json工具将对象转为json字符串！一定要重写__str__()函数！
-created_book, is_created = Book.objects.update_or_create(title='Python', defaults=eval(book.__str__())
-```
-
-
 
 
 

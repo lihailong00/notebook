@@ -28,16 +28,9 @@ ThymeLeaf用于前后端耦合的项目，通常情况下我都不会使用。�
 编写关于ThymeLeaf的配置文件：application.properties
 
 ```properties
+# 生产环境false，线上环境true
+# 设置为true，提高了并发能力，但是变更后不能及时更新
 spring.thymeleaf.cache=false
-spring.thymeleaf.check-template=true
-spring.thymeleaf.check-template-location=true
-spring.thymeleaf.servlet.content-type=text/html
-spring.thymeleaf.enabled=true
-spring.thymeleaf.encoding=UTF-8
-spring.thymeleaf.excluded-view-names=
-spring.thymeleaf.mode=HTML
-spring.thymeleaf.prefix=classpath:/templates/
-spring.thymeleaf.suffix=.html
 ```
 
 
@@ -71,7 +64,7 @@ public class IndexController {
 ```html
 <!DOCTYPE html>
 <!--注意html标签的属性-->
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="ch" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -83,7 +76,7 @@ public class IndexController {
 </html>
 ```
 
-
+`
 
 ## 坑
 

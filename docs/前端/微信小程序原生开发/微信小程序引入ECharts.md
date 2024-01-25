@@ -25,13 +25,21 @@ Github地址：https://github.com/ecomfe/echarts-for-weixin
 > HTML
 
 ```html
+<navigation-bar title="lazy echart" back="{{false}}" color="black" background="#FFF"></navigation-bar>
 <!-- 
 1. 必须指定ec-canvas的长度和宽度
 2. 必须指定ec-canvas标签的ec属性
 3. 建议制定id属性和canvas-id属性
 -->
-<view style="width: 100%; height: 500rpx;">
-  <ec-canvas id="grade-pie-cart" canvas-id="grade-pie-cart" ec="{{grade_pie_cart_ec}}" style="width: 100%; height: 100%;"></ec-canvas>
+
+<!-- 图1 -->
+<view class="my-chart" style="width: 100%; height: 1000rpx;">
+  <ec-canvas id="graph1" canvas-id="chart1" ec="{{ec1}}" style="width: 100%; height: 100%;"></ec-canvas>
+</view>
+
+<!-- 图2 -->
+<view class="my-chart" style="width: 100%; height: 1000rpx;">
+  <ec-canvas id="graph2" canvas-id="chart2" ec="{{ec2}}" style="width: 100%; height: 100%;"></ec-canvas>
 </view>
 ```
 
@@ -40,34 +48,94 @@ Github地址：https://github.com/ecomfe/echarts-for-weixin
 > JS
 
 ```js
-import * as echarts from '../../ec-canvas/echarts'  // 引入官方的echarts组件
+// pages/lazy-echart/lazy-echart.js
+import * as echarts from '../../ec-canvas/echarts'
 
 Page({
+
+  /**
+   * 页面的初始数据
+   */
   data: {
-    grade_pie_cart_ec: {  // 自定义ec变量
-      onInit: initChart
+    ec1: {
+      lazyLoad: true
+    },
+    ec2: {
+      lazyLoad: true
     }
+  },
+  onLoad(options) {
+    this.component1 = this.selectComponent("#graph1")  // 获取图1dom
+    this.component2 = this.selectComponent("#graph2")  // 获取图2dom
+    this.init()
+  },
+  init() {
+    // 图1初始化
+    this.component1.init((canvas, width, height, dpr) => {
+      let chart = echarts.init(canvas, null, {
+        width,
+        height,
+        devicePixelRatio: dpr
+      })
+      let option = getOption1()
+      chart.setOption(option)
+      this.chart = chart
+      return chart
+    })
+
+    // 图2初始化
+    this.component2.init((canvas, width, height, dpr) => {
+      let chart = echarts.init(canvas, null, {
+        width,
+        height,
+        devicePixelRatio: dpr
+      })
+      let option = getOption2()
+      chart.setOption(option)
+      this.chart = chart
+      return chart
+    })
   }
-});
+})
 
-function initChart(canvas, width, height, dpr) {
-  let chart = echarts.init(canvas, null, {
-    width: width,
-    height: height,
-    devicePixelRatio: dpr
-  });
-  canvas.setChart(chart);
+function getOption1() {  // 获取图1配置信息
+  wx.request({
+    url: 'http://localhost:8080/graph/1',  // 自定义后端获取数据
+  })
+  
+  let option = {
+    title: {
+      text: 'Referer of a Website',
+      subtext: 'Fake Data',
+      left: 'center'
+    },
+    xAxis: {
+      type: 'category',
+      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: [
+      {
+        data: [150, 230, 224, 218, 135, 147, 260],
+        type: 'line'
+      }
+    ]
+  }
 
-  let option = getOption()
-
-  chart.setOption(option);
-  return chart;
+  option.title.text = '第一个图'  // 自定义参数
+  return option
 }
 
-function getOption() {
-  let option = {  // 官网上查看参数案例：https://echarts.apache.org/examples/zh/index.html
+function getOption2() {  // 获取图2配置信息
+  wx.request({
+    url: 'http://localhost:8080/graph/2',  // 自定义后端获取数据
+  })
+  
+  let option = {
     title: {
-      text: '成绩分布',
+      text: 'Referer of a Website',
       subtext: 'Fake Data',
       left: 'center'
     },
@@ -84,11 +152,11 @@ function getOption() {
         type: 'pie',
         radius: '50%',
         data: [
-          { value: 1048, name: '90-100' },
-          { value: 735, name: '80-89' },
-          { value: 580, name: '70-79' },
-          { value: 484, name: '60-69' },
-          { value: 300, name: '0-59' }
+          { value: 1048, name: 'Search Engine' },
+          { value: 735, name: 'Direct' },
+          { value: 580, name: 'Email' },
+          { value: 484, name: 'Union Ads' },
+          { value: 300, name: 'Video Ads' }
         ],
         emphasis: {
           itemStyle: {
@@ -99,7 +167,9 @@ function getOption() {
         }
       }
     ]
-  };
+  }
+
+  option.title.text = '第二个图'  // 自定义参数
   return option
 }
 ```
@@ -111,7 +181,8 @@ function getOption() {
 ```json
 {
   "usingComponents": {
-    "ec-canvas": "/ec-canvas/ec-canvas"
+    "navigation-bar": "/components/navigation-bar/navigation-bar",
+    "ec-canvas": "../../ec-canvas/ec-canvas"
   }
 }
 ```

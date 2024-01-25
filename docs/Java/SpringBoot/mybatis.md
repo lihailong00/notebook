@@ -68,8 +68,8 @@ Mybatis在Spring Boot项目中的使用方法和官方文章中的有一些区�
 
     <!--mysql配置-->
     <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
     </dependency>
 
     <!--mybatis相关依赖-->

@@ -46,15 +46,17 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
 @EnableSwagger2
-@Profile({"test", "dev"})
-public class SpringFoxConfig {                                    
+public class SpringFoxConfig { 
+    @Value("${swagger.enabled}")  // 建议生产环境关闭swagger
+    private boolean enabled;
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
-          .select()                                  
-          .apis(RequestHandlerSelectors.any())
-          .paths(PathSelectors.any())
-          .build();                                           
+                .enable(enabled)
+                .select()
+                .apis(RequestHandlerSelectors.any())
+                .paths(PathSelectors.any())
+                .build();
     }
 }
 ```
@@ -100,6 +102,8 @@ spring:
       matching-strategy: ant_path_matcher
   profiles:
     active: dev
+swagger:
+  enabled: true  # 建议生产环境关闭swagger
 ```
 
 

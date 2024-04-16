@@ -1,8 +1,6 @@
-# springboot自定义响应类
+# SpringBoot统一结构返回+traceId
 
 [toc]
-
-
 
 
 
